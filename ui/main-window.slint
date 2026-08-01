@@ -5,7 +5,7 @@ import {
     SpinBox,
     HorizontalBox,
     VerticalBox,
-    GridBox, ComboBox,
+    GridBox, ComboBox, ProgressIndicator,
 } from "std-widgets.slint";
 import { CameraControl } from "camera-control.slint";
 
@@ -110,6 +110,7 @@ component Form inherits VerticalBox {
                     CameraControl.take_photo();
                 }
             }
+            ProgressIndicator {}
         }
     }
 

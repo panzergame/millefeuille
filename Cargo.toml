@@ -1,11 +1,16 @@
 [package]
-name = "photo-sandwich"
+name = "millefeuille"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 gphoto2 = "3.4.1"
+image = "0.25.9"
 slint = "1.13.1"
+config_macro = { path = "config-macro" }
+confy = "2.0.0"
+serde = { version = "1.0.229", features = ["derive", "serde_derive"] }
+serde_derive = "1.0.229"
 
 [build-dependencies]
 slint-build = "1.13.1"

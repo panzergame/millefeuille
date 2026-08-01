@@ -1,0 +1,13 @@
+[package]
+name = "config_macro"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "config_macro"
+path = "src/lib.rs"
+proc-macro = true
+
+[dependencies]
+quote = "1.0.47"
+syn = "3.0.3"
