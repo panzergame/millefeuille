@@ -7,14 +7,22 @@ const APP_NAME: &str = "millefeuille";
 #[derive(ConfigHelper, Serialize, Deserialize)]
 pub struct Config {
     iso: i32,
-    count: i16
+    aperture: i32,
+    shutter_speed: i32,
+    hdr_bracketing: i16,
+    count: i16,
+    output_dir: String
 }
 
 impl ::std::default::Default for Config {
     fn default() -> Self {
         Self{
             iso: -1,
-            count: 10
+            aperture: -1,
+            shutter_speed: -1,
+            hdr_bracketing: 0,
+            count: 10,
+            output_dir: "".to_string() // TODO default dir
         }
     }
 }

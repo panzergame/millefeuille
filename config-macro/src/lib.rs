@@ -16,8 +16,8 @@ fn do_generate_accessors(fields: &syn::FieldsNamed, class_name: &Ident) -> Resul
                   self.save().expect("Failed to save config");
                 }
                 
-                pub fn #name(&self) -> #ty {
-                  self.#name
+                pub fn #name(&self) -> &#ty {
+                  &self.#name
                 }
             })
         })
