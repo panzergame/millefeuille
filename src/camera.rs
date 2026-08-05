@@ -9,7 +9,7 @@ use gphoto2::list::CameraListIter;
 use gphoto2::task::Task;
 use gphoto2::widget::Widget::Radio;
 use gphoto2::{Context};
-use slint::{Image, SharedPixelBuffer};
+use slint::{Image, Rgba8Pixel, SharedPixelBuffer};
 
 pub struct Camera {
     context: Context,
@@ -43,16 +43,16 @@ impl Camera {
         }
     }
 
-    pub async fn capture_preview(&self) -> Result<Image, Box<dyn Error>> {
-        let file = self.camera.capture_preview().await?;
-        let content_bytes = file.get_data(&self.context).await?;
-        let decoded_image = image::load_from_memory(&content_bytes)?.into_rgb8();
+    pub fn capture_preview(&self) -> Result<SharedPixelBuffer<Rgba8Pixel>, Box<dyn Error>> {
+        let file = self.camera.capture_preview().wait()?;
+        let content_bytes = file.get_data(&self.context).wait()?;
+        let decoded_image = image::load_from_memory(&content_bytes)?.into_rgba8();
         let shared_buffer = SharedPixelBuffer::clone_from_slice(
             decoded_image.as_raw(),
             decoded_image.width(),
             decoded_image.height(),
         );
-        Ok(Image::from_rgb8(shared_buffer))
+        Ok(shared_buffer)
     }
 
     pub fn take_photo(&self) {

@@ -1,7 +1,8 @@
 mod camera;
 mod config;
+mod preview;
+use slint::Image;
 use std::{error::Error, sync::Arc};
-use slint::{Timer, TimerMode};
 
 slint::include_modules!();
 
@@ -20,39 +21,6 @@ fn open_camera() -> Result<camera::Camera, Box<dyn Error>> {
     Ok(camera)
 }
 
-async fn capture_preview_task(camera: Arc<camera::Camera>, window: slint::Weak<MainWindow>) {
-    match camera.capture_preview().await {
-        Ok(image) => {
-            if let Some(window) = window.upgrade() {
-                window.set_preview_image(image);
-            }
-        }
-        Err(error) => eprintln!("failed to get preview image: {error}"),
-    }
-}
-
-fn start_preview_loop(camera: &Arc<camera::Camera>, main_window: &MainWindow) -> Timer {
-    let timer: Timer = Timer::default();
-    timer.start(
-        TimerMode::Repeated,
-        std::time::Duration::from_millis(300),
-        {
-            let camera = camera.clone();
-            let window = main_window.as_weak();
-            move || {
-                let camera = camera.clone();
-                let window = window.clone();
-                slint::spawn_local(async move {
-                    capture_preview_task(camera, window).await;
-                })
-                .unwrap();
-            }
-        }
-    );
-
-    timer
-}
-
 fn create_ui(camera: &Arc<camera::Camera>) -> Result<Arc<MainWindow>, slint::PlatformError> {
     let main_window = Arc::new(MainWindow::new()?);
     main_window.global::<CameraControl>().on_take_photo({
@@ -66,15 +34,27 @@ fn create_ui(camera: &Arc<camera::Camera>) -> Result<Arc<MainWindow>, slint::Pla
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
-
     let mut config = config::Config::load()?;
-    config.set_iso(config.iso() + 10);
-    println!("iso: {}", config.iso());
-    
+
     let camera = Arc::new(open_camera()?);
     let main_window = create_ui(&camera)?;
-    let preview_timer = start_preview_loop(&camera, main_window.as_ref());
+
+    let weak_window = main_window.as_weak();
+    let update_preview: preview::PreviewCallback = Arc::new(move |pixel_buffer| {
+        let weak_window = weak_window.clone();
+        slint::invoke_from_event_loop(move || {
+            if let Some(window) = weak_window.upgrade() {
+                let image = Image::from_rgba8(pixel_buffer);
+                window.set_preview_image(image);
+            }
+        }).unwrap();
+    });
+
+    let preview_thread = preview::PreviewThread::new(&camera, &update_preview);
 
     main_window.run()?;
+
+    println!("exit...");
+
     Ok(())
 }
