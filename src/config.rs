@@ -22,7 +22,7 @@ impl ::std::default::Default for Config {
             shutter_speed: -1,
             hdr_bracketing: 0,
             count: 10,
-            output_dir: "".to_string() // TODO default dir
+            output_dir: "".into() // TODO default dir
         }
     }
 }

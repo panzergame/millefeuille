@@ -7,6 +7,7 @@ use gphoto2::file::CameraFile;
 use gphoto2::filesys::CameraFS;
 use gphoto2::list::CameraListIter;
 use gphoto2::task::Task;
+use gphoto2::widget::Widget::Radio;
 use gphoto2::{Context};
 use slint::{Image, SharedPixelBuffer};
 
@@ -57,4 +58,12 @@ impl Camera {
     pub fn take_photo(&self) {
 
     }
+
+    async fn radio_property_choices(&self, name: &str) -> Result<Vec<String>, Box<dyn Error>> {
+        let widget = self.camera.config_key(name).await?;
+        match widget {
+            Radio(widget) => Ok(vec![]),
+            _ => Err("not a radio property".into())
+        }
+    } 
 }
