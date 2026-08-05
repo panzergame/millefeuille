@@ -130,15 +130,22 @@ component Form inherits VerticalBox {
 }
 
 export component MainWindow inherits Window {
+    // Rust updates this property after each captured preview.
+    in-out property <image> preview-image;
+
     HorizontalLayout {
         Form { }
 
         Rectangle {
-            width: 500px;
-            height: 400px;
+            width: 800px;
+            height: 600px;
             image := Image {
                 width: parent.width;
                 height: parent.height;
+                image-fit: contain;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+                source: preview-image;
             }
         }
     }

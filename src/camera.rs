@@ -51,7 +51,7 @@ impl Camera {
             decoded_image.width(),
             decoded_image.height(),
         );
-        Ok(Image::from_rgba8(shared_buffer))
+        Ok(Image::from_rgb8(shared_buffer))
     }
 
     pub fn take_photo(&self) {
