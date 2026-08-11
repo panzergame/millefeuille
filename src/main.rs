@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         let weak_window = weak_window.clone();
         slint::invoke_from_event_loop(move || {
             if let Some(window) = weak_window.upgrade() {
-                let image = Image::from_rgba8(pixel_buffer);
+                let image = Image::from_rgb8(pixel_buffer);
                 window.set_preview_image(image);
             }
         }).unwrap();

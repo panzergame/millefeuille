@@ -1,15 +1,18 @@
-use std::print;
 use std::error::Error;
 use std::result::Result;
+use std::time::Instant;
 
 use gphoto2::Camera as GCamera;
+use gphoto2::Context;
 use gphoto2::file::CameraFile;
 use gphoto2::filesys::CameraFS;
 use gphoto2::list::CameraListIter;
 use gphoto2::task::Task;
 use gphoto2::widget::Widget::Radio;
-use gphoto2::{Context};
-use slint::{Image, Rgba8Pixel, SharedPixelBuffer};
+use image::EncodableLayout;
+use slint::{Rgb8Pixel, SharedPixelBuffer};
+use turbojpeg::{decompress, PixelFormat};
+
 
 pub struct Camera {
     context: Context,
@@ -43,27 +46,30 @@ impl Camera {
         }
     }
 
-    pub fn capture_preview(&self) -> Result<SharedPixelBuffer<Rgba8Pixel>, Box<dyn Error>> {
+    pub fn capture_preview(&self) -> Result<SharedPixelBuffer<Rgb8Pixel>, Box<dyn Error>> {
         let file = self.camera.capture_preview().wait()?;
         let content_bytes = file.get_data(&self.context).wait()?;
-        let decoded_image = image::load_from_memory(&content_bytes)?.into_rgba8();
-        let shared_buffer = SharedPixelBuffer::clone_from_slice(
-            decoded_image.as_raw(),
-            decoded_image.width(),
-            decoded_image.height(),
+        let image = decompress(
+            &content_bytes,
+            PixelFormat::RGB,
+        )?;
+
+        let shared_buffer = SharedPixelBuffer::<Rgb8Pixel>::clone_from_slice(
+            image.pixels.as_bytes(),
+            image.width as u32,
+            image.height as u32,
         );
+
         Ok(shared_buffer)
     }
 
-    pub fn take_photo(&self) {
-
-    }
+    pub fn take_photo(&self) {}
 
     async fn radio_property_choices(&self, name: &str) -> Result<Vec<String>, Box<dyn Error>> {
         let widget = self.camera.config_key(name).await?;
         match widget {
             Radio(widget) => Ok(vec![]),
-            _ => Err("not a radio property".into())
+            _ => Err("not a radio property".into()),
         }
-    } 
+    }
 }

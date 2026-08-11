@@ -1,4 +1,4 @@
-use slint::{Image, Rgba8Pixel, SharedPixelBuffer};
+use slint::{Image, Rgb8Pixel, SharedPixelBuffer};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread::JoinHandle;
@@ -6,9 +6,9 @@ use std::{thread, time};
 
 use crate::camera::Camera;
 
-const MIN_PREVIEW_INTERVAL: time::Duration = time::Duration::from_millis(1);
+const MIN_PREVIEW_INTERVAL: time::Duration = time::Duration::from_millis(40);
 
-pub type PreviewCallback = Arc<dyn Fn(SharedPixelBuffer<Rgba8Pixel>) -> () + Send + Sync>;
+pub type PreviewCallback = Arc<dyn Fn(SharedPixelBuffer<Rgb8Pixel>) -> () + Send + Sync>;
 
 struct PreviewManager {
     camera: Arc<Camera>,
@@ -59,7 +59,6 @@ impl PreviewManager {
         while self.running.load(Ordering::Relaxed) {
             match self.camera.capture_preview() {
                 Ok(pixel_buffer) => {
-                    println!("captured image");
                     (self.callback)(pixel_buffer);
                 }
                 Err(error) => eprintln!("failed to get preview image: {error}"),

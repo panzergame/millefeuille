@@ -11,6 +11,8 @@ config_macro = { path = "config-macro" }
 confy = "2.0.0"
 serde = { version = "1.0.229", features = ["derive", "serde_derive"] }
 serde_derive = "1.0.229"
+turbojpeg = "1.5.1"
 
 [build-dependencies]
 slint-build = "1.13.1"
+
