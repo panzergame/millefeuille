@@ -25,8 +25,7 @@ impl Camera {
         let context = Context::new()?;
         let camera = context
             .autodetect_camera()
-            .wait()
-            .expect("Failed to autodetect camera");
+            .wait()?;
         // let camera_fs = camera.fs();
         Ok(Camera {
             context,

@@ -1,6 +1,7 @@
 mod camera;
 mod config;
 mod preview;
+use image::open;
 use slint::Image;
 use std::{error::Error, sync::Arc};
 
@@ -14,30 +15,22 @@ fn open_camera() -> Result<camera::Camera, Box<dyn Error>> {
         println!("\t{}", camera_desc.model);
     });
 
-    let select_camera_desc = cameras_desc.next();
-
     let camera = camera::Camera::open()?;
-    // camera.print_summary();
     Ok(camera)
 }
 
-fn create_ui(camera: &Arc<camera::Camera>) -> Result<Arc<MainWindow>, slint::PlatformError> {
-    let main_window = Arc::new(MainWindow::new()?);
+fn show_main_screen(
+    main_window: &Arc<MainWindow>,
+    camera: Arc<camera::Camera>,
+) -> Result<(), slint::PlatformError> {
+    main_window.set_failed_open_camera(false);
+
     main_window.global::<CameraControl>().on_take_photo({
         let camera = camera.clone();
         move || {
             camera.take_photo();
         }
     });
-
-    Ok(main_window)
-}
-
-fn main() -> Result<(), Box<dyn Error>> {
-    let mut config = config::Config::load()?;
-
-    let camera = Arc::new(open_camera()?);
-    let main_window = create_ui(&camera)?;
 
     let weak_window = main_window.as_weak();
     let update_preview: preview::PreviewCallback = Arc::new(move |pixel_buffer| {
@@ -47,11 +40,34 @@ fn main() -> Result<(), Box<dyn Error>> {
                 let image = Image::from_rgb8(pixel_buffer);
                 window.set_preview_image(image);
             }
-        }).unwrap();
+        })
+        .unwrap();
     });
 
     let preview_thread = preview::PreviewThread::new(&camera, &update_preview);
 
+    Ok(())
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let mut config = config::Config::load()?;
+
+    let main_window = Arc::new(MainWindow::new()?);
+    main_window.on_retry_open_camera({
+        let main_window = main_window.clone();
+        move || {
+            if let Ok(camera) = open_camera() {
+                let _ = show_main_screen(&main_window, Arc::new(camera));
+            }
+        }
+    });
+
+    match open_camera() {
+        Ok(camera) => show_main_screen(&main_window, Arc::new(camera))?,
+        Err(_) => {
+            main_window.set_failed_open_camera(true);
+        }
+    }
     main_window.run()?;
 
     println!("exit...");

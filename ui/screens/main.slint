@@ -1,0 +1,155 @@
+import {
+    Button,
+    Spinner,
+    GroupBox,
+    SpinBox,
+    HorizontalBox,
+    VerticalBox,
+    GridBox,
+    ComboBox,
+    ProgressIndicator,
+} from "std-widgets.slint";
+import { CameraControl } from "../camera-control.slint";
+component Form inherits VerticalBox {
+    alignment: center;
+    GroupBox {
+        title: "Focus Control";
+        VerticalBox {
+            padding: 0px;
+            HorizontalBox {
+                padding: 0px;
+                Button {
+                    text: "+";
+                }
+
+                Button {
+                    text: "-";
+                }
+            }
+
+            HorizontalBox {
+                Text {
+                    text: "Step Distance:";
+                }
+
+                SpinBox {
+                    minimum: 1;
+                    maximum: 3;
+                }
+            }
+        }
+    }
+
+    GroupBox {
+        title: "Picture Control";
+        VerticalBox {
+            padding: 0px;
+
+            GridBox {
+                padding: 0px;
+
+                Row {
+                    Text {
+                        text: "Iso:";
+                    }
+
+                    ComboBox { }
+                }
+
+                Row {
+                    Text {
+                        text: "Aperture:";
+                    }
+
+                    ComboBox { }
+                }
+
+                Row {
+                    Text {
+                        text: "Shutter Speed:";
+                    }
+
+                    ComboBox { }
+                }
+            }
+
+            Button {
+                text: "Take Photo";
+                clicked => {
+                    CameraControl.take_photo();
+                }
+            }
+        }
+    }
+
+    GroupBox {
+        title: "Sequence Control";
+        VerticalBox {
+            padding: 0px;
+            GridBox {
+                padding: 0px;
+                Row {
+                    Text {
+                        text: "Count:";
+                    }
+
+                    SpinBox {
+                        minimum: 2;
+                        maximum: 20;
+                        value: 10;
+                    }
+                }
+
+                Row {
+                    Text {
+                        text: "HDR bracketing:";
+                    }
+
+                    SpinBox { }
+                }
+            }
+
+            Button {
+                text: "Take Sequence";
+                clicked => {
+                    CameraControl.take_photo();
+                }
+            }
+
+            ProgressIndicator { }
+        }
+    }
+
+    GroupBox {
+        title: "File";
+        VerticalBox {
+            padding: 0px;
+            Text {
+                text: "Output Directory:";
+            }
+
+            Text {
+                text: "";
+            }
+        }
+    }
+}
+
+export component MainScreen inherits HorizontalLayout {
+    in-out property <image> preview-image;
+
+    Form { }
+
+    Rectangle {
+        width: 800px;
+        height: 600px;
+        image := Image {
+            width: parent.width;
+            height: parent.height;
+            image-fit: contain;
+            vertical-alignment: center;
+            horizontal-alignment: center;
+            source: preview-image;
+        }
+    }
+}
